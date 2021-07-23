@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GithubRepoDetailsApp</string>
+
+    <string name="repo_title">Title</string>
+    <string name="repo_views">29K</string>
+    <string name="repo_desc">repo description</string>
+    <string name="language">repo language</string>
+    <string name="license">repo license</string>
+    <string name="heading">Heading</string>
+</resources>
