@@ -37,10 +37,12 @@ class FetchRepoService :Service() {
     }
 
     private fun initMap() {
-        map?.put("q", "created:>2021-07-20")
-        map?.put("sort", "stars")
-        map?.put("order", "desc")
-        map?.put("page", "1")
+        map?.apply {
+            put("q", "created:>2021-07-20")
+            put("sort", "stars")
+            put("order", "desc")
+            put("page", "1")
+        }
     }
 
     var timer = Timer()

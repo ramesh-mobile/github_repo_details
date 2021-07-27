@@ -34,6 +34,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
     var mIntentFilterRepoService: IntentFilter? = null
 
     var repoList : MutableList<ItemModel?>? = mutableListOf()
+
     lateinit var repositoryAdapter: RepositoryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,10 +60,8 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
     }
 
     fun registerReciever(){
-
         mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
         registerReceiver(mReceiverGitRepoService, mIntentFilterRepoService)
-
     }
 
     fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
@@ -76,7 +75,6 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
     override fun onStart() {
         super.onStart()
         registerReciever()
-
     }
 
     override fun onStop() {
@@ -86,11 +84,6 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
 
     override fun onDestroy() {
         super.onDestroy()
-
-    }
-
-    companion object{
-        val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
     }
 
     var mReceiverGitRepoService: BroadcastReceiver = object : BroadcastReceiver() {
@@ -106,17 +99,16 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
 
     private fun initialzeRecycler() {
         repositoryAdapter = RepositoryAdapter(repoList as List<ItemModel?>, this, this)
-        recycler_view.setHasFixedSize(true)
-        recycler_view.setItemViewCacheSize(20)
-        recycler_view.setDrawingCacheEnabled(true)
-        recycler_view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
-        recycler_view.setItemAnimator(DefaultItemAnimator())
-        recycler_view.addItemDecoration(
-                DividerItemDecoration(this,
-                        DividerItemDecoration.VERTICAL)
-        )
-        recycler_view.setLayoutManager(GridLayoutManager(this, 1))
-        recycler_view.setAdapter(repositoryAdapter)
+        recycler_view.also {
+            it.setHasFixedSize(true)
+            it.setItemViewCacheSize(20)
+            it.setDrawingCacheEnabled(true)
+            it.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+            it.setItemAnimator(DefaultItemAnimator())
+            it.addItemDecoration(DividerItemDecoration(this,DividerItemDecoration.VERTICAL))
+            it.setLayoutManager(GridLayoutManager(this, 1))
+            it.setAdapter(repositoryAdapter)
+        }
     }
 
     override fun onFetchSuccess(repoModel: RepoModel?) {
@@ -135,5 +127,9 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
             it.putExtra(Constants.ITEM_DETAILS, itemModel)
             startActivity(it)
         }
+    }
+
+    companion object{
+        const val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
     }
 }
