@@ -59,7 +59,7 @@ class FetchRepoService :Service() {
 
     fun getRepository(){
         initMap()
-        CorountinesUtils.main {
+        CorountinesUtils.back {
             var response : Response<RepoModel>?  = null
             try {
                 response = NetworkSinglton.instance?.getRepos(map as Map<String?, String?>?)
