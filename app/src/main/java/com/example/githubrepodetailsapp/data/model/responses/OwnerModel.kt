@@ -1,15 +1,18 @@
 package com.example.githubrepodetailsapp.data.model.responses
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
 
 /**
  * Created by ramesh on 22-07-2021
  */
+@Parcelize
 @Entity
 public data class OwnerModel(
 
@@ -28,7 +31,7 @@ public data class OwnerModel(
     @ColumnInfo(name ="html_url")
     var htmlUrl: String? = null,
 
-) : Serializable {
+) : Parcelable {
 constructor() : this(1,"ramesh","","")
 
 }
