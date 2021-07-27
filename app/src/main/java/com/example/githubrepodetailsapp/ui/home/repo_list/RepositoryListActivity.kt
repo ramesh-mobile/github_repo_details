@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -26,7 +27,7 @@ import kotlinx.android.synthetic.main.recycler_list.*
 /**
  * Created by ramesh on 20-07-2021
  */
-class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,RepositoryAdapter.RepoAdapterListener{
+class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapterListener{
     private val TAG = "RepositoryListActivity"
 
     lateinit var viewModel : RepositoryListViewModel
@@ -37,6 +38,10 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
 
     lateinit var repositoryAdapter: RepositoryAdapter
 
+    companion object{
+        const val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
@@ -44,12 +49,18 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
         //get view model object from ViewModelProviders
         viewModel = ViewModelProviders.of(this).get(RepositoryListViewModel::class.java)
 
-        viewModel.repositoryListListener = this
-
         initialzeRecycler()
+
         mIntentFilterRepoService = IntentFilter()
 
         viewModel.getDatabaseRepository()
+
+        viewModel.dataMutableLiveData.observe(this, Observer {
+            if(it!=null)
+                onFetchSuccess(it)
+            else
+                onFetchFailure("No data is available")
+        })
 
         if(!isMyServiceRunning(FetchRepoService::class.java)) {
             Intent(this, FetchRepoService::class.java).also {
@@ -111,14 +122,14 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
         }
     }
 
-    override fun onFetchSuccess(repoModel: RepoModel?) {
+    fun onFetchSuccess(repoModel: RepoModel?) {
         repoList?.clear()
         print(TAG, "updated list is : ${repoModel}")
         repoList?.addAll(repoModel?.itemModel!!)
         repositoryAdapter.notifyDataSetChanged()
     }
 
-    override fun onFetchFailure(errorMessage: String) {
+    fun onFetchFailure(errorMessage: String) {
         print(TAG, errorMessage)
     }
 
@@ -127,9 +138,5 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
             it.putExtra(Constants.ITEM_DETAILS, itemModel)
             startActivity(it)
         }
-    }
-
-    companion object{
-        const val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
     }
 }
