@@ -48,7 +48,7 @@ class FetchRepoService :Service() {
         super.onStartCommand(intent, flags, startId)
         startForeground("Service is running")
         repositoryDatabase = GithubProjectApplication.getDatabase()
-        broadcastIntent = Intent(RepositoryListActivity.mBroadcastGeofenceAction)
+        broadcastIntent = Intent(RepositoryListActivity.mBroadcastGitRepoServiceAction)
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 getRepository()
@@ -59,7 +59,7 @@ class FetchRepoService :Service() {
 
     fun getRepository(){
         initMap()
-        CorountinesUtils.back {
+        CorountinesUtils.main {
             var response : Response<RepoModel>?  = null
             try {
                 response = NetworkSinglton.instance?.getRepos(map as Map<String?, String?>?)
