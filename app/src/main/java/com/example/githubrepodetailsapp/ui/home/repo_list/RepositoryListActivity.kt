@@ -64,9 +64,9 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
         })
 
         if(!isMyServiceRunning(FetchRepoService::class.java)) {
-            Intent(this, FetchRepoService::class.java).also {
-                it.putExtra("inputExtra", "passing any text")
-                ContextCompat.startForegroundService(this.applicationContext, it)
+            Intent(this, FetchRepoService::class.java).apply {
+                putExtra("inputExtra", "passing any text")
+                ContextCompat.startForegroundService(this@RepositoryListActivity.applicationContext, this)
             }
         }
     }
@@ -110,15 +110,15 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
 
     private fun initialzeRecycler() {
         repositoryAdapter = RepositoryAdapter(repoList as List<ItemModel?>, this, this)
-        recycler_view.also {
-            it.setHasFixedSize(true)
-            it.setItemViewCacheSize(20)
-            it.setDrawingCacheEnabled(true)
-            it.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
-            it.setItemAnimator(DefaultItemAnimator())
-            it.addItemDecoration(DividerItemDecoration(this,DividerItemDecoration.VERTICAL))
-            it.setLayoutManager(GridLayoutManager(this, 1))
-            it.setAdapter(repositoryAdapter)
+        recycler_view.apply {
+            setHasFixedSize(true)
+            setItemViewCacheSize(20)
+            setDrawingCacheEnabled(true)
+            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+            setItemAnimator(DefaultItemAnimator())
+            addItemDecoration(DividerItemDecoration(this@RepositoryListActivity,DividerItemDecoration.VERTICAL))
+            setLayoutManager(GridLayoutManager(this@RepositoryListActivity, 1))
+            setAdapter(repositoryAdapter)
         }
     }
 
@@ -134,9 +134,9 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
     }
 
     override fun onItemClicked(itemModel: ItemModel?) {
-        Intent(this, RepoDetailsActivity::class.java).also {
-            it.putExtra(Constants.ITEM_DETAILS, itemModel)
-            startActivity(it)
+        Intent(this, RepoDetailsActivity::class.java).apply {
+            putExtra(Constants.ITEM_DETAILS, itemModel)
+            startActivity(this)
         }
     }
 }
