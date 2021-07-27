@@ -130,8 +130,9 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
     }
 
     override fun onItemClicked(itemModel: ItemModel?) {
-        var intent = Intent(this, RepoDetailsActivity::class.java)
-        intent.putExtra(Constants.ITEM_DETAILS, itemModel)
-        startActivity(intent)
+        Intent(this, RepoDetailsActivity::class.java).also {
+            it.putExtra(Constants.ITEM_DETAILS, itemModel)
+            startActivity(it)
+        }
     }
 }
