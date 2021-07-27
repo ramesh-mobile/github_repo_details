@@ -57,6 +57,11 @@ class FetchRepoService :Service() {
         return START_NOT_STICKY
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        timer?.cancel()
+    }
+
     fun getRepository(){
         initMap()
         CorountinesUtils.back {
