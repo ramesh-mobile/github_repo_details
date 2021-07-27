@@ -52,6 +52,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
         initialzeRecycler()
 
         mIntentFilterRepoService = IntentFilter()
+        mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
 
         viewModel.getDatabaseRepository()
 
@@ -59,7 +60,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
             if(it!=null)
                 onFetchSuccess(it)
             else
-                onFetchFailure("No data is available")
+                onFetchFailure(getString(R.string.no_data_available))
         })
 
         if(!isMyServiceRunning(FetchRepoService::class.java)) {
@@ -71,7 +72,6 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
     }
 
     fun registerReciever(){
-        mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
         registerReceiver(mReceiverGitRepoService, mIntentFilterRepoService)
     }
 
