@@ -31,7 +31,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
 
     lateinit var viewModel : RepositoryListViewModel
 
-    var mIntentFilterGeofence: IntentFilter? = null
+    var mIntentFilterRepoService: IntentFilter? = null
 
     var repoList : MutableList<ItemModel?>? = mutableListOf()
     lateinit var repositoryAdapter: RepositoryAdapter
@@ -45,9 +45,8 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
 
         viewModel.repositoryListListener = this
 
-        registerReciever()
-
         initialzeRecycler()
+        mIntentFilterRepoService = IntentFilter()
 
         viewModel.getDatabaseRepository()
 
@@ -59,9 +58,9 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
     }
 
     fun registerReciever(){
-        mIntentFilterGeofence = IntentFilter()
-        mIntentFilterGeofence?.addAction(mBroadcastGeofenceAction)
-        registerReceiver(mReceiverGeofence, mIntentFilterGeofence)
+
+        mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
+        registerReceiver(mReceiverGitRepoService, mIntentFilterRepoService)
 
     }
 
@@ -73,16 +72,27 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
         return false
     }
 
+    override fun onStart() {
+        super.onStart()
+        registerReciever()
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(mReceiverGitRepoService)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(mReceiverGeofence)
+
     }
 
     companion object{
-        val mBroadcastGeofenceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.geofence"
+        val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
     }
 
-    var mReceiverGeofence: BroadcastReceiver = object : BroadcastReceiver() {
+    var mReceiverGitRepoService: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             var isDataUpdated = intent.getBooleanExtra(Constants.DATA_UPDATED, false)
             if(isDataUpdated){
