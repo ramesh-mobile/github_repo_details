@@ -48,15 +48,6 @@ class DataConverter : Parcelable{
     }
 
     @TypeConverter
-    fun itemModelListToString(itemModels : List<ItemModel?>?) : String?{
-        if(itemModels==null) return null
-        val type: Type = object : TypeToken<List<ItemModel>>() {}.type
-        val jsonString : String = gson.toJson(itemModels, type)
-        return jsonString
-    }
-
-
-    @TypeConverter
     fun stringToItemModelList(data: String?): List<ItemModel?>? {
         if (data == null) {
             return emptyList<ItemModel>()
