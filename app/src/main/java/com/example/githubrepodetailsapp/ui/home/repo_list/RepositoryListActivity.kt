@@ -51,9 +51,10 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,Repos
         viewModel.getDatabaseRepository()
 
         if(!isMyServiceRunning(FetchRepoService::class.java)) {
-            val serviceIntent = Intent(this, FetchRepoService::class.java)
-            serviceIntent.putExtra("inputExtra", "passing any text")
-            ContextCompat.startForegroundService(this.applicationContext, serviceIntent)
+            Intent(this, FetchRepoService::class.java).also {
+                it.putExtra("inputExtra", "passing any text")
+                ContextCompat.startForegroundService(this.applicationContext, it)
+            }
         }
     }
 
