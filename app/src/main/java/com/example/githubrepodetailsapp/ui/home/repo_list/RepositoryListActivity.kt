@@ -110,7 +110,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
 
     private fun initialzeRecycler() {
         repositoryAdapter = RepositoryAdapter(repoList as List<ItemModel?>, this, this)
-        recycler_view.apply {
+        recycler_view?.apply {
             setHasFixedSize(true)
             setItemViewCacheSize(20)
             setDrawingCacheEnabled(true)
