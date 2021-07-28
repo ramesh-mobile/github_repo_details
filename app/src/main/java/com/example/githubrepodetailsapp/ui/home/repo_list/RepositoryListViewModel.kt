@@ -23,7 +23,7 @@ class RepositoryListViewModel : ViewModel() {
     fun getRepoLiveData() : LiveData<RepoModel?> = dataMutableLiveData
 
     fun getDatabaseRepository(){
-        CorountinesUtils.main {
+        CorountinesUtils.io {
             //get Database object
             var repositoryDatabase = GithubProjectApplication.getDatabase()
 

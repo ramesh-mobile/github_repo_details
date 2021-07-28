@@ -17,7 +17,7 @@ object CorountinesUtils {
         }
     }
 
-    fun back(work : suspend(()-> Unit) ){
+    fun io(work : suspend(()-> Unit) ){
         CoroutineScope(Dispatchers.IO).launch {
             Log.d(TAG, "main checkVersion dispatch")
             work()
