@@ -56,7 +56,7 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
 
         viewModel.getDatabaseRepository()
 
-        viewModel.dataMutableLiveData.observe(this, Observer {
+        viewModel.getRepoLiveData().observe(this, Observer {
             if(it!=null)
                 onFetchSuccess(it)
             else
