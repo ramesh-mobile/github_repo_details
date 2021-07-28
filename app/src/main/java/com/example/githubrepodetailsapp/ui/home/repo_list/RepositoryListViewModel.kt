@@ -18,7 +18,9 @@ import java.util.*
 class RepositoryListViewModel : ViewModel() {
     private val TAG = "RepositoryListViewModel"
 
-    var dataMutableLiveData =  MutableLiveData<RepoModel?>()
+    private var dataMutableLiveData =  MutableLiveData<RepoModel?>()
+
+    fun getRepoLiveData() : LiveData<RepoModel?> = dataMutableLiveData
 
     fun getDatabaseRepository(){
         CorountinesUtils.main {
