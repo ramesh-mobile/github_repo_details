@@ -27,7 +27,6 @@
             android:theme="@style/Theme.GithubRepoDetailsApp" />
 
         <receiver android:name=".data.receivers.StartOnBootReceiver"
-            android:exported="true"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
@@ -37,8 +36,7 @@
 
         <service
             android:name=".data.services.FetchRepoService"
-            android:enabled="true"
-            android:exported="true"/>
+            android:enabled="true"/>
 
     </application>
 
