@@ -13,9 +13,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by ramesh on 20-07-2021
  */
-@SuppressLint("StaticFieldLeak")
 object RetrofitService {
-    var context: Context? = null
     var httpBuilder: OkHttpClient =OkHttpClient.Builder()
             .addInterceptor(NetworkInterceptor())
             .connectTimeout(90, TimeUnit.SECONDS)
