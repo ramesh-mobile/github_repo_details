@@ -9,5 +9,5 @@ class NoInternetException(var errorMessage: String) : IOException(
     errorMessage
 ) {
     override val message: String
-        get() = "No network available, please check your WiFi or Data connection!"
+        get() = errorMessage//"No network available, please check your WiFi or Data connection!"
 }
