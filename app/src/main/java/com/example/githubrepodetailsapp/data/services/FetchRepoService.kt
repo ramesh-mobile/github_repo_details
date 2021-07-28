@@ -37,12 +37,10 @@ class FetchRepoService :Service() {
     }
 
     private fun initMap() {
-        map?.apply {
-            put("q", "created:>2021-07-20")
-            put("sort", "stars")
-            put("order", "desc")
-            put("page", "1")
-        }
+        map?.put("q", "created:>2021-07-20")
+        map?.put("sort", "stars")
+        map?.put("order", "desc")
+        map?.put("page", "1")
     }
 
     var timer = Timer()
@@ -50,18 +48,13 @@ class FetchRepoService :Service() {
         super.onStartCommand(intent, flags, startId)
         startForeground("Service is running")
         repositoryDatabase = GithubProjectApplication.getDatabase()
-        broadcastIntent = Intent(RepositoryListActivity.mBroadcastGitRepoServiceAction)
+        broadcastIntent = Intent(RepositoryListActivity.mBroadcastGeofenceAction)
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 getRepository()
             }
         }, 0, Constants.TIME_TO_SYNC)
         return START_NOT_STICKY
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        timer?.cancel()
     }
 
     fun getRepository(){

@@ -10,7 +10,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -27,20 +26,15 @@ import kotlinx.android.synthetic.main.recycler_list.*
 /**
  * Created by ramesh on 20-07-2021
  */
-class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapterListener{
+class RepositoryListActivity : AppCompatActivity() ,RepositoryListListener,RepositoryAdapter.RepoAdapterListener{
     private val TAG = "RepositoryListActivity"
 
     lateinit var viewModel : RepositoryListViewModel
 
-    var mIntentFilterRepoService: IntentFilter? = null
+    var mIntentFilterGeofence: IntentFilter? = null
 
     var repoList : MutableList<ItemModel?>? = mutableListOf()
-
     lateinit var repositoryAdapter: RepositoryAdapter
-
-    companion object{
-        const val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,30 +43,26 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
         //get view model object from ViewModelProviders
         viewModel = ViewModelProviders.of(this).get(RepositoryListViewModel::class.java)
 
-        initialzeRecycler()
+        viewModel.repositoryListListener = this
 
-        mIntentFilterRepoService = IntentFilter()
-        mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
+        registerReciever()
+
+        initialzeRecycler()
 
         viewModel.getDatabaseRepository()
 
-        viewModel.getRepoLiveData().observe(this, Observer {
-            if(it!=null)
-                onFetchSuccess(it)
-            else
-                onFetchFailure(getString(R.string.no_data_available))
-        })
-
         if(!isMyServiceRunning(FetchRepoService::class.java)) {
-            Intent(this, FetchRepoService::class.java).apply {
-                putExtra("inputExtra", "passing any text")
-                ContextCompat.startForegroundService(this@RepositoryListActivity.applicationContext, this)
-            }
+            val serviceIntent = Intent(this, FetchRepoService::class.java)
+            serviceIntent.putExtra("inputExtra", "passing any text")
+            ContextCompat.startForegroundService(this.applicationContext, serviceIntent)
         }
     }
 
     fun registerReciever(){
-        registerReceiver(mReceiverGitRepoService, mIntentFilterRepoService)
+        mIntentFilterGeofence = IntentFilter()
+        mIntentFilterGeofence?.addAction(mBroadcastGeofenceAction)
+        registerReceiver(mReceiverGeofence, mIntentFilterGeofence)
+
     }
 
     fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
@@ -83,21 +73,16 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
         return false
     }
 
-    override fun onStart() {
-        super.onStart()
-        registerReciever()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(mReceiverGitRepoService)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(mReceiverGeofence)
     }
 
-    var mReceiverGitRepoService: BroadcastReceiver = object : BroadcastReceiver() {
+    companion object{
+        val mBroadcastGeofenceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.geofence"
+    }
+
+    var mReceiverGeofence: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             var isDataUpdated = intent.getBooleanExtra(Constants.DATA_UPDATED, false)
             if(isDataUpdated){
@@ -110,33 +95,33 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
 
     private fun initialzeRecycler() {
         repositoryAdapter = RepositoryAdapter(repoList as List<ItemModel?>, this, this)
-        recycler_view?.apply {
-            setHasFixedSize(true)
-            setItemViewCacheSize(20)
-            setDrawingCacheEnabled(true)
-            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
-            setItemAnimator(DefaultItemAnimator())
-            addItemDecoration(DividerItemDecoration(this@RepositoryListActivity,DividerItemDecoration.VERTICAL))
-            setLayoutManager(GridLayoutManager(this@RepositoryListActivity, 1))
-            setAdapter(repositoryAdapter)
-        }
+        recycler_view.setHasFixedSize(true)
+        recycler_view.setItemViewCacheSize(20)
+        recycler_view.setDrawingCacheEnabled(true)
+        recycler_view.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+        recycler_view.setItemAnimator(DefaultItemAnimator())
+        recycler_view.addItemDecoration(
+                DividerItemDecoration(this,
+                        DividerItemDecoration.VERTICAL)
+        )
+        recycler_view.setLayoutManager(GridLayoutManager(this, 1))
+        recycler_view.setAdapter(repositoryAdapter)
     }
 
-    fun onFetchSuccess(repoModel: RepoModel?) {
+    override fun onFetchSuccess(repoModel: RepoModel?) {
         repoList?.clear()
         print(TAG, "updated list is : ${repoModel}")
         repoList?.addAll(repoModel?.itemModel!!)
         repositoryAdapter.notifyDataSetChanged()
     }
 
-    fun onFetchFailure(errorMessage: String) {
+    override fun onFetchFailure(errorMessage: String) {
         print(TAG, errorMessage)
     }
 
     override fun onItemClicked(itemModel: ItemModel?) {
-        Intent(this, RepoDetailsActivity::class.java).apply {
-            putExtra(Constants.ITEM_DETAILS, itemModel)
-            startActivity(this)
-        }
+        var intent = Intent(this, RepoDetailsActivity::class.java)
+        intent.putExtra(Constants.ITEM_DETAILS, itemModel)
+        startActivity(intent)
     }
 }

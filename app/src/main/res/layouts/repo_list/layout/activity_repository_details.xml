@@ -61,7 +61,6 @@
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                app:cardBackgroundColor="@color/purple_200"
                 android:layout_height="match_parent">
 
                 <LinearLayout

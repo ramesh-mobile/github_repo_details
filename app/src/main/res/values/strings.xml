@@ -7,5 +7,4 @@
     <string name="language">repo language</string>
     <string name="license">repo license</string>
     <string name="heading">Heading</string>
-    <string name="no_data_available">Could not find any data</string>
 </resources>

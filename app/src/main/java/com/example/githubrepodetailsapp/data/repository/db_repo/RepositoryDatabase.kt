@@ -11,8 +11,8 @@ import com.example.githubrepodetailsapp.data.model.responses.RepoModel
 /**
  * Created by ramesh on 22-07-2021
  */
-@Database(entities = [RepoModel::class,ItemModel::class, OwnerModel::class,LicenseModel::class], version = 1, exportSchema = true)
+@Database(entities = [RepoModel::class,ItemModel::class, OwnerModel::class,LicenseModel::class], version = 1, exportSchema = false)
 @TypeConverters(DataConverter::class)
 abstract class RepositoryDatabase : RoomDatabase() {
-        abstract fun RepoDao(): RepositoryDao?
+    abstract fun RepoDao(): RepositoryDao?
 }
