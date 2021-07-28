@@ -42,7 +42,7 @@ class RepoDetailsActivity : AppCompatActivity() {
         ButterKnife.bind(this)
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
 
-        var itemModel : ItemModel? = intent?.getSerializableExtra(Constants.ITEM_DETAILS) as ItemModel?
+        var itemModel : ItemModel? = intent?.getParcelableExtra(Constants.ITEM_DETAILS) as ItemModel?
         Glide.with(this).load(itemModel?.ownerModel?.avatarUrl).into(imgViewProfilePic!!)
         lblProjectHeading?.setText("Name:${(itemModel?.name)?:"Not Avalable"}")
         lblOwnerName?.setText("Owner:${(itemModel?.ownerModel?.name)?:"Not Avalable"}")
