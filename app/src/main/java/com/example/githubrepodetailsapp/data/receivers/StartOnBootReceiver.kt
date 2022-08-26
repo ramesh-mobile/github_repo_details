@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import com.example.githubrepodetailsapp.data.services.FetchRepoService
 
 
 /**
@@ -21,9 +19,9 @@ class StartOnBootReceiver : BroadcastReceiver() {
             Toast.makeText(context, "Boot Completed", Toast.LENGTH_LONG).show();
 
             //for Background Service
-            val serviceIntent = Intent(context, FetchRepoService::class.java)
+            /*val serviceIntent = Intent(context, FetchRepoService::class.java)
             serviceIntent.putExtra("inputExtra", "passing any text")
-            ContextCompat.startForegroundService(context!!, serviceIntent)
+            ContextCompat.startForegroundService(context!!, serviceIntent)*/
 
         }
     }

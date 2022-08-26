@@ -1,24 +1,18 @@
 package com.example.githubrepodetailsapp.ui.home.repo_list
 
-import android.app.ActivityManager
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.*
+import androidx.work.*
 import com.example.githubrepodetailsapp.R
 import com.example.githubrepodetailsapp.data.model.responses.ItemModel
 import com.example.githubrepodetailsapp.data.model.responses.RepoModel
-import com.example.githubrepodetailsapp.data.services.FetchRepoService
+import com.example.githubrepodetailsapp.data.services.FetchRepoWorker
 import com.example.githubrepodetailsapp.ui.home.repo_details.RepoDetailsActivity
 import com.example.githubrepodetailsapp.utils.Constants
 import com.example.githubrepodetailsapp.utils.print
@@ -32,15 +26,12 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
 
     lateinit var viewModel : RepositoryListViewModel
 
-    var mIntentFilterRepoService: IntentFilter? = null
-
     var repoList : MutableList<ItemModel?>? = mutableListOf()
 
     lateinit var repositoryAdapter: RepositoryAdapter
 
-    companion object{
-        const val mBroadcastGitRepoServiceAction = "com.avatarins.avatarvendormanagement.broadcast.string.for.git.repo.service"
-    }
+    var pageCount = 3
+    var lastPage = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,10 +40,11 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
         //get view model object from ViewModelProviders
         viewModel = ViewModelProviders.of(this).get(RepositoryListViewModel::class.java)
 
-        initialzeRecycler()
+        initializeRecycler()
 
-        mIntentFilterRepoService = IntentFilter()
-        mIntentFilterRepoService?.addAction(mBroadcastGitRepoServiceAction)
+        setListeners()
+
+        initializeWorker()
 
         viewModel.getDatabaseRepository()
 
@@ -62,74 +54,86 @@ class RepositoryListActivity : AppCompatActivity() ,RepositoryAdapter.RepoAdapte
             else
                 onFetchFailure(getString(R.string.no_data_available))
         })
+    }
 
-        if(!isMyServiceRunning(FetchRepoService::class.java)) {
-            Intent(this, FetchRepoService::class.java).apply {
-                putExtra("inputExtra", "passing any text")
-                ContextCompat.startForegroundService(this@RepositoryListActivity.applicationContext, this)
+    private fun setListeners() {
+        nsv.setOnScrollChangeListener{v: NestedScrollView, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY > 0) {
+                val layoutManager = recycler_view.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.findLastCompletelyVisibleItemPosition() + 1
+                if (visibleItemCount == layoutManager.itemCount && pageCount < lastPage) {
+                    pageCount += 1
+                    initializeWorker()
+                }
             }
         }
     }
 
-    fun registerReciever(){
-        registerReceiver(mReceiverGitRepoService, mIntentFilterRepoService)
-    }
+    private fun initializeWorker() {
+        val workManager = WorkManager.getInstance(applicationContext)
 
-    fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
-        val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            return (serviceClass.name == service.service.className)
+        var data : Data = Data.Builder().apply {
+            putInt(Constants.PAGE_COUNT,pageCount)
+        }.build()
+
+        //val downloadRepoWorker : WorkRequest = PeriodicWorkRequestBuilder<FetchRepoWorker>(15,TimeUnit.MINUTES).setInputData(data).build()
+        val downloadRepoWorker = OneTimeWorkRequestBuilder<FetchRepoWorker>().setInputData(data).build()
+        workManager.run {
+
+            //cancelling pending workers
+            //cancelWorkById(downloadRepoWorker.id)
+
+            //observer for work manager
+            getWorkInfoByIdLiveData(downloadRepoWorker.id).observe(this@RepositoryListActivity,{
+                when(it.state){
+                    WorkInfo.State.ENQUEUED->{
+                        print(TAG, "initializeWorker: work is enqueued")
+                    }
+                    WorkInfo.State.SUCCEEDED->{
+
+                        print(TAG, "initializeWorker: work is succeed")
+                        onDataReceived(it.outputData.getBoolean(Constants.DATA_UPDATED,false))
+                    }
+                    WorkInfo.State.FAILED->{
+                        print(TAG, "initializeWorker: work is failed")
+                    }
+                }
+            })
+
+            //enqueueUniqueWork("myworker",ExistingWorkPolicy.REPLACE,downloadRepoWorker)
+            enqueue(downloadRepoWorker)
         }
-        return false
     }
 
-    override fun onStart() {
-        super.onStart()
-        registerReciever()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(mReceiverGitRepoService)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    var mReceiverGitRepoService: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            var isDataUpdated = intent.getBooleanExtra(Constants.DATA_UPDATED, false)
-            if(isDataUpdated){
-                Toast.makeText(context, "data is updated", Toast.LENGTH_LONG).show()
-                viewModel.getDatabaseRepository()
-                print(TAG, "Data is updated")
-            }
+    private fun onDataReceived(isDataUpdated:Boolean){
+        if(isDataUpdated){
+            Toast.makeText(applicationContext, "data is updated", Toast.LENGTH_LONG).show()
+            viewModel.getDatabaseRepository()
+            print(TAG, "Data is updated")
         }
     }
 
-    private fun initialzeRecycler() {
+    private fun initializeRecycler() {
         repositoryAdapter = RepositoryAdapter(repoList as List<ItemModel?>, this, this)
         recycler_view?.apply {
-            setHasFixedSize(true)
-            setItemViewCacheSize(20)
+            /*setHasFixedSize(true)
             setDrawingCacheEnabled(true)
-            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
-            setItemAnimator(DefaultItemAnimator())
+            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)*/
             addItemDecoration(DividerItemDecoration(this@RepositoryListActivity,DividerItemDecoration.VERTICAL))
-            setLayoutManager(GridLayoutManager(this@RepositoryListActivity, 1))
-            setAdapter(repositoryAdapter)
+            layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false)
+            adapter = repositoryAdapter
         }
+
     }
 
-    fun onFetchSuccess(repoModel: RepoModel?) {
+    private fun onFetchSuccess(repoModel: RepoModel?) {
         repoList?.clear()
         print(TAG, "updated list is : ${repoModel}")
         repoList?.addAll(repoModel?.itemModel!!)
         repositoryAdapter.notifyDataSetChanged()
     }
 
-    fun onFetchFailure(errorMessage: String) {
+    private fun onFetchFailure(errorMessage: String) {
         print(TAG, errorMessage)
     }
 
